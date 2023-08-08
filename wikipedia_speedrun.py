@@ -1,9 +1,18 @@
 from mediawiki import MediaWiki
 import sqlite3
 import pandas as pd
-from scripts.initializer import initialize
+from scripts.scraper import SearchPath
 
 wiki = MediaWiki()
+
+def initialize(start: str, destination: str, conn: sqlite3.Connection) -> None:
+    cursor = conn.cursor()
+    cursor.execute(f"INSERT INTO results (start, destination, result) VALUES ('{start}', '{destination}', '')")
+    cursor.execute(f"CREATE TABLE '{start} | {destination} | Paths' (id INTEGER PRIMARY KEY, path TEXT)")
+    cursor.execute(f"CREATE TABLE '{start} | {destination} | Names' (id INTEGER PRIMARY KEY, href_name TEXT)")
+    cursor.execute(f"INSERT INTO '{start} | {destination} | Names' (href_name) VALUES ('{start}')")
+    cursor.execute(f"INSERT INTO '{start} | {destination} | Paths' (path) VALUES ('1')")
+    conn.commit()
 
 def get_directions() -> list[str]:
     starting_url = wiki.opensearch(input("Start:"), results=1)
@@ -11,17 +20,14 @@ def get_directions() -> list[str]:
     return [starting_url[-1][-1], destination_url[-1][-1]]
 
 if __name__=="__main__":
-    #inputs = [i.replace('https://en.wikipedia.org/wiki/','') for i in get_directions()]
-    inputs = ['Poland', 'Japan']
+    # start, destination = [i.replace('https://en.wikipedia.org/wiki/','') for i in get_directions()]
+    start, destination = 'Poland', 'Japan'
     conn = sqlite3.connect('db\\dbSQLite.db')
     df = pd.read_sql_query("SELECT * FROM results", conn, index_col='id')
-    if not df.loc[(df['start'] == inputs[0]) & (df['destination'] == inputs[1])].empty:
-        print("exist")
-    else:
-        cursor = conn.cursor()
-        cursor.execute(f"INSERT INTO results (start, destination, result) VALUES ('{inputs[0]}', '{inputs[1]}', '')")
-        conn.commit()
-        initialize(inputs[0], inputs[1])
+    if df.loc[(df['start'] == start) & (df['destination'] == destination)].empty:
+        print("NEW PATH")
+        initialize(start, destination, conn)
     conn.close()
+    res = SearchPath(start, destination)
 
-# TODO nowy scraper i podłączenie z nim 
+# TODO nowy scraper
