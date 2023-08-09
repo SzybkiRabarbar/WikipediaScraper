@@ -20,8 +20,8 @@ def get_directions() -> list[str]:
     return [starting_url[-1][-1], destination_url[-1][-1]]
 
 if __name__=="__main__":
-    # start, destination = [i.replace('https://en.wikipedia.org/wiki/','') for i in get_directions()]
-    start, destination = 'Poland', 'Japan'
+    start, destination = [i.replace('https://en.wikipedia.org/wiki/','') for i in get_directions()]
+    # start, destination = 'Poland', 'Japan'
     conn = sqlite3.connect('db\\dbSQLite.db')
     df = pd.read_sql_query("SELECT * FROM results", conn, index_col='id')
     if df.loc[(df['start'] == start) & (df['destination'] == destination)].empty:
@@ -29,4 +29,4 @@ if __name__=="__main__":
         initialize(start, destination, conn)
     conn.close()
     res = SearchPath(start, destination)
-    print(res.final_result)
+    res.print_answer()

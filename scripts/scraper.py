@@ -3,18 +3,19 @@ from threading import Thread
 from bs4 import BeautifulSoup
 import sqlite3
 import pandas as pd
-import time
 
 class SearchPath():
     
     def __init__(self, start, destination) -> None:
-        self.start_time = time.time()
-        self.final_result = ''
         self.start = start
         self.destination = destination
         self.conn = sqlite3.connect('db\\dbSQLite.db')
         self.session = requests.Session()
-        self.main()
+        if self.check_table_results():
+            self.conn.close()
+        else:
+            self.main()
+            
     
     def extract_hrefs_from_content(self, content_div) -> list[str]:
         result = []
@@ -47,7 +48,7 @@ class SearchPath():
     
     def fetch_path_data(self) -> tuple[list[tuple[str, str]], list]:
         paths = pd.read_sql_query(
-            f'SELECT id, path FROM "{self.start} | {self.destination} | Paths" LIMIT 40',
+            f'SELECT id, path FROM "{self.start} | {self.destination} | Paths" LIMIT 10',
             self.conn)
         paths_ids = paths['id'].tolist()
         paths['href_id'] = [int(path.split(',')[-1]) for path in paths['path']]
@@ -85,8 +86,31 @@ class SearchPath():
         cursor = self.conn.cursor()
         cursor.execute(f'DELETE FROM "{self.start} | {self.destination} | Paths" WHERE id IN ({",".join(map(str, paths_ids))})')
         cursor.close()
+    
+    def check_table_results(self) -> bool:
+        result = pd.read_sql_query(
+            f'SELECT result FROM results WHERE start = "{self.start}" AND destination = "{self.destination}"',
+            self.conn)
+        if result.iloc[0]['result']:
+            self.answer = result.iloc[0]['result']
+            return True
+        return False
+    
+    def save_results(self, path: str) -> None:
+        cursor = self.conn.cursor()
+        cursor.execute(f'UPDATE results SET result = "{path}" WHERE start = "{self.start}" AND destination = "{self.destination}"')
+        cursor.close()
+        self.conn.commit()
+        self.answer = path
+            
+    def check_hrefs(self, hrefs: list[tuple[str, str]]) -> bool:
+        for href in hrefs:
+            if href[1] == self.destination:
+                self.save_results(href[0])
+                return True
+        return False
         
-    def main(self):
+    def main(self) -> None:
         paths, paths_ids = self.fetch_path_data()
         new_hrefs = []
         thread_list = [Thread(target=self.thread_process,args=(path, new_hrefs)) for path in paths]
@@ -94,27 +118,43 @@ class SearchPath():
             thread.start()
         for thread in thread_list:
             thread.join()
-        
-        # for href in new_hrefs: #TODO do poprawy sprawdzanie wyniku (dodać metode w init)
-        #     if href[1] == self.destination:
-        #         self.conn.close()
-        #         self.final_result = href
-        #         return href
         new_hrefs = self.filter_repeats(new_hrefs)
+        
+        if self.check_hrefs(new_hrefs):
+            self.conn.close()
+            return None
+            
         self.insert_hrefs_names_and_paths(new_hrefs)
         self.delete_old_paths(paths_ids)
-        
         self.conn.commit()
-        
-        print(f'Czas wykonania {time.time() - self.start_time} sek')
-        
-        #TODO na końcu main()
+        print(len(new_hrefs))
+        self.main()
         #TODO kolenosć metod
             
     def thread_process(self, path: tuple[str, str], new_hrefs: list) -> None: #<== method executed by threads
         for new_href in self.scrap_paths(path):    
             if new_href:
                 new_hrefs.append(new_href)
+                
+    def print_answer(self) -> None:
+        print()
+        conn = sqlite3.connect('db\\dbSQLite.db')
+        content = []
+        try:
+            path = self.answer.split(',')
+        except AttributeError:
+            print("Path not found")
+        for step in path:
+            content.append(pd.read_sql_query(
+                f'SELECT href_name FROM "{self.start} | {self.destination} | Names" WHERE id == "{step}"',
+            conn).iloc[0]['href_name'])
+        for c in content:
+            print(f"https://en.wikipedia.org/wiki/{c}")
+        print(f"https://en.wikipedia.org/wiki/{self.destination}\n")
+        print(f"{' -> '.join(content)} -> {self.destination}")
+        
+        
+        
         
 if __name__=="__main__":
     pass
