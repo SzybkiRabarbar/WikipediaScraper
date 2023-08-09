@@ -29,5 +29,4 @@ if __name__=="__main__":
         initialize(start, destination, conn)
     conn.close()
     res = SearchPath(start, destination)
-
-# TODO nowy scraper
+    print(res.final_result)
