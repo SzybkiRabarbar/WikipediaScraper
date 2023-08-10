@@ -3,6 +3,7 @@ from threading import Thread
 from bs4 import BeautifulSoup
 import sqlite3
 import pandas as pd
+import time
 
 class SearchPath():
     
@@ -48,7 +49,7 @@ class SearchPath():
     
     def fetch_path_data(self) -> tuple[list[tuple[str, str]], list]:
         paths = pd.read_sql_query(
-            f'SELECT id, path FROM "{self.start} | {self.destination} | Paths" LIMIT 10',
+            f'SELECT id, path FROM "{self.start} | {self.destination} | Paths" LIMIT 5',
             self.conn)
         paths_ids = paths['id'].tolist()
         paths['href_id'] = [int(path.split(',')[-1]) for path in paths['path']]
@@ -111,6 +112,8 @@ class SearchPath():
         return False
         
     def main(self) -> None:
+        print('=== === ===')
+        start_timer = time.time()
         paths, paths_ids = self.fetch_path_data()
         new_hrefs = []
         thread_list = [Thread(target=self.thread_process,args=(path, new_hrefs)) for path in paths]
@@ -118,6 +121,7 @@ class SearchPath():
             thread.start()
         for thread in thread_list:
             thread.join()
+        print(f"Fetch {len(new_hrefs)} sites")
         new_hrefs = self.filter_repeats(new_hrefs)
         
         if self.check_hrefs(new_hrefs):
@@ -127,7 +131,8 @@ class SearchPath():
         self.insert_hrefs_names_and_paths(new_hrefs)
         self.delete_old_paths(paths_ids)
         self.conn.commit()
-        print(len(new_hrefs))
+        print(f"Append {len(new_hrefs)} sites")
+        print(f"{time.time() - start_timer} sec")
         self.main()
         #TODO kolenosć metod
             

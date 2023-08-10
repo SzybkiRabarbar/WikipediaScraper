@@ -1,1 +1,1 @@
-# Wikipedia Speedrun
+# Wikipedia Scraper

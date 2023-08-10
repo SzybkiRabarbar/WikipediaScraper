@@ -21,7 +21,7 @@ def get_directions() -> list[str]:
 
 if __name__=="__main__":
     start, destination = [i.replace('https://en.wikipedia.org/wiki/','') for i in get_directions()]
-    # start, destination = 'Poland', 'Japan'
+    print(f'{start} -> {destination}')
     conn = sqlite3.connect('db\\dbSQLite.db')
     df = pd.read_sql_query("SELECT * FROM results", conn, index_col='id')
     if df.loc[(df['start'] == start) & (df['destination'] == destination)].empty:
