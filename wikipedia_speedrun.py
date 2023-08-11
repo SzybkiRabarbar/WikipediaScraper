@@ -28,5 +28,5 @@ if __name__=="__main__":
         print("NEW PATH")
         initialize(start, destination, conn)
     conn.close()
-    res = SearchPath(start, destination)
-    res.print_answer()
+    scraper = SearchPath(start, destination)
+    scraper.print_answer()

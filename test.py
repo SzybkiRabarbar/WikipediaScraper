@@ -9,3 +9,4 @@ def get_directions() -> list[str]:
 if __name__=='__main__':
     p = get_directions()
     print(p)
+    

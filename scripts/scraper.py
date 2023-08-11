@@ -25,24 +25,25 @@ class SearchPath():
                 result.append(link['href'].replace("/wiki/","").replace('"', '%22'))
         return result
     
-    def scrap_paths(self,path: tuple[str, str]) -> list[tuple[str, str]]: #<== scrape and checking
+    def scrap_paths(self,path: tuple[str, str]) -> list[tuple[str, str]]: 
         if not path:
             return []
         try: #<== scraping
             response = self.session.get(f"https://en.wikipedia.org/wiki/{path[1]}")
         except ConnectionError:
-            return path
+            print(f"ConnectionError: {path[1]}")
+            return self.scrap_paths(path)
         soup = BeautifulSoup(response.content, "html.parser")
 
         content_div = soup.find('main', {'id': 'content'})
         hrefs = self.extract_hrefs_from_content(content_div)
         return [(path[0], h) for h in hrefs]
             
-    def filter_href(self, link:str) -> bool: #<== check if link is valid
-        for boring_site in ["File:","Category:","Help:","Portal:","Wikipedia:","Talk:","Special:","Template:","Template_talk:"]:
+    def filter_href(self, link: str) -> bool: 
+        for boring_site in ["File:", "Category:", "Help:", "Portal:", "Wikipedia:", "Talk:", "Special:", "Template:", "Template_talk:"]:
             if link.startswith(f"/wiki/{boring_site}"):
                 return False
-        for photo_site in [".jpg",".png",".svc"]:
+        for photo_site in [".jpg", ".png", ".svc"]:
             if link.endswith(photo_site):
                 return False
         return True
@@ -61,14 +62,14 @@ class SearchPath():
         return (paths, paths_ids)
     
     def filter_repeats(self, hrefs: list[tuple[str, str]]) -> list[tuple[str, str]]:
-        temp = []
         content = []
         df = pd.read_sql_query(
             f'SELECT href_name FROM "{self.start} | {self.destination} | Names"',
             self.conn)
+        temp = set(df['href_name'].values)
         for href in hrefs:
-            if df.loc[df['href_name'] == href[1]].empty and not href[1] in temp:
-                temp.append(href[1])
+            if not href[1] in temp:
+                temp.add(href[1])
                 content.append(href)
         return content
     
@@ -112,31 +113,31 @@ class SearchPath():
         return False
         
     def main(self) -> None:
-        print('=== === ===')
-        start_timer = time.time()
-        paths, paths_ids = self.fetch_path_data()
-        new_hrefs = []
-        thread_list = [Thread(target=self.thread_process,args=(path, new_hrefs)) for path in paths]
-        for thread in thread_list:
-            thread.start()
-        for thread in thread_list:
-            thread.join()
-        print(f"Fetch {len(new_hrefs)} sites")
-        new_hrefs = self.filter_repeats(new_hrefs)
-        
-        if self.check_hrefs(new_hrefs):
-            self.conn.close()
-            return None
+        while True:
+            print('=== === ===')
+            start_timer = time.time()
             
-        self.insert_hrefs_names_and_paths(new_hrefs)
-        self.delete_old_paths(paths_ids)
-        self.conn.commit()
-        print(f"Append {len(new_hrefs)} sites")
-        print(f"{time.time() - start_timer} sec")
-        self.main()
-        #TODO kolenosć metod
+            paths, paths_ids = self.fetch_path_data()           
+            new_hrefs = []
+            thread_list = [Thread(target=self.thread_process,args=(path, new_hrefs)) for path in paths]
+            for thread in thread_list:
+                thread.start()
+            for thread in thread_list:
+                thread.join()
+            print(f"Fetch {len(new_hrefs)} sites")
+            new_hrefs = self.filter_repeats(new_hrefs)
+
+            if self.check_hrefs(new_hrefs):
+                self.conn.close()
+                return None    
+            self.insert_hrefs_names_and_paths(new_hrefs)
+            self.delete_old_paths(paths_ids)
             
-    def thread_process(self, path: tuple[str, str], new_hrefs: list) -> None: #<== method executed by threads
+            self.conn.commit()
+            print(f"Append {len(new_hrefs)} sites")
+            print(f"{time.time() - start_timer} sec")
+            
+    def thread_process(self, path: tuple[str, str], new_hrefs: list) -> None: 
         for new_href in self.scrap_paths(path):    
             if new_href:
                 new_hrefs.append(new_href)
@@ -157,10 +158,7 @@ class SearchPath():
             print(f"https://en.wikipedia.org/wiki/{c}")
         print(f"https://en.wikipedia.org/wiki/{self.destination}\n")
         print(f"{' -> '.join(content)} -> {self.destination}")
-        
-        
-        
-        
+                
 if __name__=="__main__":
     pass
     
