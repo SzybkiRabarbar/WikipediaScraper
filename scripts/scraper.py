@@ -4,6 +4,7 @@ from bs4 import BeautifulSoup
 import sqlite3
 import pandas as pd
 import time
+from scripts.converter_URL_encoded_char import decode_URL
 
 class SearchPath():
     
@@ -170,9 +171,4 @@ class SearchPath():
         for c in content:
             print(f"https://en.wikipedia.org/wiki/{c}")
         print(f"https://en.wikipedia.org/wiki/{self.destination}\n")
-        print(f"{' -> '.join(content)} -> {self.destination}")
-
-if __name__=="__main__":
-    pass
-    
-    
+        print(f"{' -> '.join([decode_URL(href) for href in content])} -> {decode_URL(self.destination)}")    

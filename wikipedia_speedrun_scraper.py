@@ -2,6 +2,7 @@ from mediawiki import MediaWiki
 import sqlite3
 import pandas as pd
 from scripts.scraper import SearchPath
+from scripts.converter_URL_encoded_char import decode_URL
 
 wiki = MediaWiki()
 
@@ -22,7 +23,7 @@ def get_directions() -> list[str]:
 
 if __name__=="__main__":
     start, destination = get_directions()
-    print(f'{start} -> {destination}')
+    print(f'\n{decode_URL(start)} -> {decode_URL(destination)}')
     
     conn = sqlite3.connect('db\\dbSQLite.db')
     df = pd.read_sql_query("SELECT * FROM results", conn, index_col='id')
