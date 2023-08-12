@@ -13,20 +13,22 @@ def initialize(start: str, destination: str, conn: sqlite3.Connection) -> None:
     cursor.execute(f"INSERT INTO '{start} | {destination} | Names' (href_name) VALUES ('{start}')")
     cursor.execute(f"INSERT INTO '{start} | {destination} | Paths' (path) VALUES ('1')")
     conn.commit()
+    print("New Route Created")
 
 def get_directions() -> list[str]:
     starting_url = wiki.opensearch(input("Start:"), results=1)
     destination_url = wiki.opensearch(input("Destination:"), results=1)
-    return [starting_url[-1][-1], destination_url[-1][-1]]
+    return [i.replace('https://en.wikipedia.org/wiki/','') for i in [starting_url[-1][-1], destination_url[-1][-1]]]
 
 if __name__=="__main__":
-    start, destination = [i.replace('https://en.wikipedia.org/wiki/','') for i in get_directions()]
+    start, destination = get_directions()
     print(f'{start} -> {destination}')
+    
     conn = sqlite3.connect('db\\dbSQLite.db')
     df = pd.read_sql_query("SELECT * FROM results", conn, index_col='id')
     if df.loc[(df['start'] == start) & (df['destination'] == destination)].empty:
-        print("NEW PATH")
         initialize(start, destination, conn)
     conn.close()
+    
     scraper = SearchPath(start, destination)
     scraper.print_answer()
