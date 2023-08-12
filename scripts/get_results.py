@@ -12,19 +12,19 @@ def get_content(start: str, destination: str, path: str) -> str:
         f'SELECT id FROM "{start} | {destination} | Paths" WHERE path == "{path}"',
         conn).to_numpy().tolist()
     if df==[[1]]:
-        res += "Path found" + '\n'
-        res += get_route(start, destination, path) + '\n'
-        res += 'Scraped 1 site' + '\n'
+        res += "Path found" + '\n\n'
+        res += get_route(start, destination, path) + '\n\n'
+        res += 'Scraped 1 site' + '\n\n'
     elif df:
-        res += "Path found" + '\n'
-        res += get_route(start, destination, path) + '\n'
-        res += f"Scraped {df[0][0]} sites" + '\n'
-        res += f"Found {get_num_of_pages(start, destination)} uniqe sites" + '\n'
+        res += "Path found" + '\n\n'
+        res += get_route(start, destination, path) + '\n\n'
+        res += f"Scraped {df[0][0]} sites" + '\n\n'
+        res += f"Found {get_num_of_pages(start, destination)} uniqe sites" + '\n\n'
     else:
-        res += 'Path not found' + '\n'
-        res += get_route(start, destination, path) + '\n'
-        res += f"Scraped {str(get_min_id(start, destination) - 1)} sites" + '\n'
-        res += f"Found {get_num_of_pages(start, destination)} uniqe sites" + '\n'
+        res += 'Path not found' + '\n\n'
+        res += get_route(start, destination, path) + '\n\n'
+        res += f"Scraped {str(get_min_id(start, destination) - 1)} sites" + '\n\n'
+        res += f"Found {get_num_of_pages(start, destination)} uniqe sites" + '\n\n'
     return res
 
 def get_route(start: str, destination: str, path: str) -> str:
