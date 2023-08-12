@@ -1,9 +1,11 @@
 # Results
-Poland >> Roman Catholic Archdiocese of Szczecin-Kamieñ 
+Poland >> Roman Catholic Archdiocese of Szczecin-KamieÃ± 
 ---
 Path found
-[Poland](https://en.wikipedia.org/wiki/Poland) > [Catholic Church in Poland](https://en.wikipedia.org/wiki/Catholic_Church_in_Poland) > [Roman Catholic Archdiocese of Szczecin-Kamieñ](https://en.wikipedia.org/wiki/Roman_Catholic_Archdiocese_of_Szczecin-Kamie%C5%84)
+[Poland](https://en.wikipedia.org/wiki/Poland) > [Catholic Church in Poland](https://en.wikipedia.org/wiki/Catholic_Church_in_Poland) > [Roman Catholic Archdiocese of Szczecin-KamieÃ±](https://en.wikipedia.org/wiki/Roman_Catholic_Archdiocese_of_Szczecin-Kamie%C5%84)
+
 Scraped 18 sites
+
 Found 4876 uniqe sites
 ***
 Poland >> Holy Roman Emperor 
@@ -20,10 +22,10 @@ Path found
 Scraped 55 sites
 Found 7924 uniqe sites
 ***
-Opole Voivodeship >> Renault Mégane 
+Opole Voivodeship >> Renault MÃ©gane 
 ---
 Path not found
-[Opole Voivodeship](https://en.wikipedia.org/wiki/Opole_Voivodeship) > ??? > [Renault Mégane](https://en.wikipedia.org/wiki/Renault_M%C3%A9gane)
+[Opole Voivodeship](https://en.wikipedia.org/wiki/Opole_Voivodeship) > ??? > [Renault MÃ©gane](https://en.wikipedia.org/wiki/Renault_M%C3%A9gane)
 Scraped 2496 sites
 Found 274930 uniqe sites
 ***
